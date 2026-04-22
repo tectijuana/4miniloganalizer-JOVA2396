@@ -245,7 +245,10 @@ make clean
 
 #Evidencia Asciinema#
 - [![asciicast](https://asciinema.org/a/LYfTfye7glBSqzXg.svg)](https://asciinema.org/a/LYfTfye7glBSqzXg)
-- 
+-
+#Evidencia Asciinema# 
+- Usando logs_C1000.txt
+- [![asciicast](https://asciinema.org/a/E8dxnMrZWcZw0XQS.svg)](https://asciinema.org/a/E8dxnMrZWcZw0XQS)
 
 ### Dataset utilizado — `data/logs_C.txt`
 
