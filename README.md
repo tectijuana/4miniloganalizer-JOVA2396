@@ -243,6 +243,10 @@ make clean
 
 ## 8) Evidencia de ejecución
 
+#Evidencia Asciinema#
+- [![asciicast](https://asciinema.org/a/LYfTfye7glBSqzXg.svg)](https://asciinema.org/a/LYfTfye7glBSqzXg)
+- 
+
 ### Dataset utilizado — `data/logs_C.txt`
 
 ```
