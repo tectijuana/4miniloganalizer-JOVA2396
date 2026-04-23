@@ -1,13 +1,22 @@
 /*
-Autor: Castillo Aragon Angel Jovany
-Matricula: 23211933
-Curso: Arquitectura de Computadoras / Ensamblador ARM64
-Práctica: Mini Cloud Log Analyzer - Variante C
-Fecha: Abril-22-2026
-Descripcion: Lee codigos HTTP desde stdin, uno por linea.
-             Detecta el PRIMER codigo 503 e imprime en que
-             numero de linea aparecio. Si no existe, lo reporta.
-             Solo usa syscalls Linux (sin libc, sin C).
+╔══════════════════════════════════════════════════════════════════════╗
+║          STARK INDUSTRIES — ARMOR SYSTEM v3.0 | ARM64 ASM           ║
+╠══════════════════════════════════════════════════════════════════════╣
+║  MÓDULO   : analyzer.s  —  Variante C  —  ARM64 Assembly            ║
+╠══════════════════════════════════════════════════════════════════════╣
+║  OPERADOR : Castillo Aragon Angel Jovany                             ║
+║  MATRÍCULA: 23211933                                                 ║
+║  MATERIA   : Lenguaje de Interfaz         HORARIO: 4PM               ║
+║  PRÁCTICA : Mini Cloud Log Analyzer — Variante C                     ║
+║  FECHA    : Abril-22-2026                                            ║
+╠══════════════════════════════════════════════════════════════════════╣
+║  MISIÓN   : Lee codigos HTTP desde stdin, uno por linea.             ║
+║             Detecta el PRIMER codigo 503 e imprime en que            ║
+║             numero de linea aparecio. Si no existe, lo reporta.      ║
+║             Solo usa syscalls Linux (sin libc, sin C).               ║
+╠══════════════════════════════════════════════════════════════════════╣
+║  STATUS   : ONLINE  |  TARGET: 503  |  MODE: stdin → stdout         ║
+╚══════════════════════════════════════════════════════════════════════╝
 */
 
 /*
