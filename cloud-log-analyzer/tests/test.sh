@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Pruebas automáticas para la variante base (conteo 2xx/4xx/5xx).
+# Pruebas automaticas para Variante C: detectar primer codigo 503.
+# Solo valida logs_C.txt, que es el dataset asignado a esta variante.
 
 set -euo pipefail
 
@@ -11,6 +12,10 @@ if [[ ! -x ./analyzer ]]; then
   make
 fi
 
+# ─────────────────────────────────────────────
+# Funcion: ejecutar ./analyzer con un archivo
+# Soporta ejecucion nativa ARM64 o emulada
+# ─────────────────────────────────────────────
 run_analyzer() {
   local input_file="$1"
 
@@ -24,94 +29,86 @@ run_analyzer() {
   fi
 }
 
-# Mapa de esperados por archivo
+# ─────────────────────────────────────────────
+# Salidas esperadas para Variante C
+# ─────────────────────────────────────────────
 expected_output() {
   local key="$1"
   case "$key" in
-    logs_A.txt)
-      cat <<'TXT'
-=== Mini Cloud Log Analyzer ===
-Éxitos 2xx: 4
-Errores 4xx: 3
-Errores 5xx: 3
-TXT
-      ;;
-    logs_B.txt)
-      cat <<'TXT'
-=== Mini Cloud Log Analyzer ===
-Éxitos 2xx: 2
-Errores 4xx: 5
-Errores 5xx: 3
-TXT
-      ;;
     logs_C.txt)
+      # logs_C.txt: 200,200,301,302,404,500,503,...
+      # El 503 aparece en la linea 7
       cat <<'TXT'
-=== Mini Cloud Log Analyzer ===
-Éxitos 2xx: 4
-Errores 4xx: 1
-Errores 5xx: 3
-TXT
-      ;;
-    logs_D.txt)
-      cat <<'TXT'
-=== Mini Cloud Log Analyzer ===
-Éxitos 2xx: 3
-Errores 4xx: 4
-Errores 5xx: 2
-TXT
-      ;;
-    logs_E.txt)
-      cat <<'TXT'
-=== Mini Cloud Log Analyzer ===
-Éxitos 2xx: 7
-Errores 4xx: 2
-Errores 5xx: 2
+=== Mini Cloud Log Analyzer (Variante C) ===
+Primer 503 encontrado en la linea: 7
 TXT
       ;;
     *)
-      echo "Caso no definido: $key" >&2
-      return 1
+      echo "[SKIP] Archivo $key no corresponde a Variante C." >&2
+      return 2
       ;;
   esac
 }
 
-status=0
-for f in data/logs_*.txt; do
-  base="$(basename "$f")"
-  echo "[TEST] Validando $base"
+# ─────────────────────────────────────────────
+# Prueba adicional: archivo SIN ningun 503
+# ─────────────────────────────────────────────
+test_sin_503() {
+  echo "[TEST] Validando caso sin ningun 503"
 
-  set +e
-  output="$(run_analyzer "$f")"
-  rc=$?
-  set -e
+  local input
+  input=$(printf "200\n404\n201\n500\n")
 
-  if [[ $rc -eq 99 ]]; then
-    exit 0
-  elif [[ $rc -ne 0 ]]; then
-    echo "[FAIL] Falló la ejecución para $base (rc=$rc)"
-    status=1
-    continue
+  local output
+  if [[ $(uname -m) == "aarch64" ]]; then
+    output=$(echo "$input" | ./analyzer)
+  elif command -v qemu-aarch64 >/dev/null 2>&1; then
+    output=$(echo "$input" | qemu-aarch64 ./analyzer)
+  else
+    echo "[WARN] No se puede ejecutar prueba sin 503." >&2
+    return
   fi
 
-  expected="$(expected_output "$base")"
+  local expected
+  expected=$(cat <<'TXT'
+=== Mini Cloud Log Analyzer (Variante C) ===
+No se encontro ningun codigo 503
+TXT
+)
 
   if [[ "$output" == "$expected" ]]; then
-    echo "[OK] $base"
+    echo "[OK] Caso sin 503"
   else
-    echo "[FAIL] $base"
+    echo "[FAIL] Caso sin 503"
     echo "--- Esperado ---"
     echo "$expected"
     echo "--- Obtenido ---"
     echo "$output"
-    status=1
+    return 1
   fi
-  echo
- done
+}
 
-if [[ $status -eq 0 ]]; then
-  echo "[RESULTADO] Todas las pruebas pasaron."
-else
-  echo "[RESULTADO] Hay pruebas fallidas."
-fi
+# ─────────────────────────────────────────────
+# Prueba: 503 en la ultima linea sin newline final
+# ─────────────────────────────────────────────
+test_503_ultima_linea() {
+  echo "[TEST] Validando 503 en ultima linea (sin newline final)"
 
-exit $status
+  local output
+  if [[ $(uname -m) == "aarch64" ]]; then
+    output=$(printf "200\n404\n503" | ./analyzer)
+  elif command -v qemu-aarch64 >/dev/null 2>&1; then
+    output=$(printf "200\n404\n503" | qemu-aarch64 ./analyzer)
+  else
+    echo "[WARN] No se puede ejecutar esta prueba." >&2
+    return
+  fi
+
+  local expected
+  expected=$(cat <<'TXT'
+=== Mini Cloud Log Analyzer (Variante C) ===
+Primer 503 encontrado en la linea: 3
+TXT
+)
+
+  if
